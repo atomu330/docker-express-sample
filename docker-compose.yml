@@ -1,7 +1,7 @@
 version: "3"
 services:
   api:
-    container_name: api_container
+    container_name: kizuna_api
     build: ./docker/api
     ports:
       - 3000:3000
@@ -14,23 +14,36 @@ services:
     depends_on:
       - db
     command: yarn nodemon
+    networks:
+      - default
 
   db:
-    container_name: db_container
+    container_name: kizuna_db
     build: ./docker/db
     image: mysql:5.7
     ports:
       - 3306:3306
     volumes:
-      - ./db/conf/my.cnf:/etc/mysql/conf.d/mysql.cnf
-      - ./db/init_db:/docker-entrypoint-initdb.d
-      - test_data:/var/lib/mysql
+      - ./docker/db/data:/var/lib/mysql
+      - ./docker/db/my.cnf:/etc/mysql/conf.d/my.cnf
     environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=kizuna_db
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=pass
+      - MYSQL_ROOT_PASSWORD=pass
       - TZ="Asia/Tokyo"
+    networks:
+      - default
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:5
+    container_name: kizuna_phpmyadmin
+    links:
+      - db
+    ports:
+      - 8080:80
+    volumes:
+      - ./docker/phpmyadmin/sessions:/sessions
 
 volumes:
   test_data:
