@@ -1,0 +1,36 @@
+version: "3"
+services:
+  api:
+    container_name: api_container
+    build: ./docker/api
+    ports:
+      - 3000:3000
+    volumes:
+      - ./api:/api
+    tty: true
+    environment:
+      CHOKIDAR_USEPOLLING: 1
+      TZ: Asia/Tokyo
+    depends_on:
+      - db
+    command: yarn nodemon
+
+  db:
+    container_name: db_container
+    build: ./docker/db
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    volumes:
+      - ./db/conf/my.cnf:/etc/mysql/conf.d/mysql.cnf
+      - ./db/init_db:/docker-entrypoint-initdb.d
+      - test_data:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ="Asia/Tokyo"
+
+volumes:
+  test_data:
